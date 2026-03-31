@@ -12,7 +12,15 @@ const Usuario = sequelize.define('Usuarios', {
     allowNull: false
   },
   email: {
+    type: DataTypes.STRING,
+    unique: true
+  },
+  password: {
     type: DataTypes.STRING
+  },
+  rol: {
+    type: DataTypes.STRING,
+    defaultValue: 'usuario'
   }
 })
 

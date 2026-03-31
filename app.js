@@ -1,21 +1,32 @@
-const express = require('express');
-const { engine } = require('express-handlebars');
-const fs = require('fs');
-const path = require('path');
+import express from 'express';
+import { engine } from 'express-handlebars';
+import cookieParser from 'cookie-parser';
+import apiRoutes from './routes/api.routes.js';
+import { verificarToken } from './middlewares/auth.middleware.js';
+import { Tablero, Lista, Tarjeta, Usuario } from './models/index.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import sequelize from './config/sequelize.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const port = 3000;
-const DATA_PATH = path.join(__dirname, 'data', 'data.json');
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(cookieParser()); // Habilitar la lectura de cookies
 app.use(express.static('public'));
+
+// Enrutador Principal de la APIREST
+app.use('/api', apiRoutes);
 
 // Servir GSAP desde node_modules
 app.use('/gsap', express.static(path.join(__dirname, 'node_modules', 'gsap')));
 
-// Motor de plantillas
+// Motor de plantillas Handlebars
 app.engine('hbs', engine({
   extname: '.hbs',
   defaultLayout: 'main',
@@ -27,9 +38,10 @@ app.engine('hbs', engine({
     formatDate: s => s ? s.split('-').reverse().join('/') : ''
   }
 }));
+
 app.set('view engine', 'hbs');
 
-// ── Rutas GET ──────────────────────────────────────
+// ── Rutas de Vistas GET ─────────────────────────────
 app.get('/', (req, res) => {
   res.render('home');
 });
@@ -42,129 +54,49 @@ app.get('/login', (req, res) => {
   res.render('login');
 });
 
-app.get('/dashboard', (req, res) => {
-  const contenido = fs.readFileSync(DATA_PATH, 'utf-8');
-  const data = JSON.parse(contenido);
-  res.render('dashboard', data);
-});
+// Usar verificarToken restringe el acceso solo para autenticados
+app.get('/dashboard', verificarToken, async (req, res) => {
+  try {
+    // Conseguir datos *reales* usando Sequelize (Requisito HU-07)
+    const tablerosDB = await Tablero.findAll({
+      where: { usuarioId: req.usuario.id },
+      include: [
+        {
+          model: Lista,
+          include: [{
+            model: Tarjeta,
+          }]
+        }
+      ]
+    });
 
-// ── Ruta POST: agregar tarjeta ─────────────────────
-app.post('/nueva-tarjeta', (req, res) => {
-  const { boardId, listId, titulo, descripcion, prioridad, tag,
-          fecha_inicio, fecha_fin, autor, responsable } = req.body;
+    // Mapear el estricto formato de Sequelize al formato esperado por la plantilla HBS original
+    const boards = tablerosDB.map(t => {
+      const tab = t.get({ plain: true });
+      return {
+        id: tab.id,
+        name: tab.nombre,
+        lists: tab.Listas ? tab.Listas.map(l => ({
+          id: l.id,
+          name: l.nombre,
+          cards: l.Tarjetas || []
+        })) : []
+      };
+    });
 
-  const contenido = fs.readFileSync(DATA_PATH, 'utf-8');
-  const data = JSON.parse(contenido);
-
-  const board = data.boards.find(b => b.id === parseInt(boardId));
-  if (board) {
-    const list = board.lists.find(l => l.id === parseInt(listId));
-    if (list) {
-      let maxId = 0;
-      data.boards.forEach(b => b.lists.forEach(l => l.cards.forEach(c => {
-        if (c.id > maxId) maxId = c.id;
-      })));
-
-      const today = new Date().toISOString().split('T')[0];
-
-      list.cards.push({
-        id:             maxId + 1,
-        titulo:         (titulo      || '').trim(),
-        descripcion:    (descripcion || '').trim(),
-        prioridad:      prioridad    || 'Task',
-        tag:            tag          || 'Feature',
-        estado:         list.estado  || 'Backlog',
-        fecha_creacion: today,
-        fecha_inicio:   fecha_inicio || '',
-        fecha_fin:      fecha_fin    || '',
-        autor:          (autor        || '').trim(),
-        responsable:    (responsable  || '').trim()
-      });
-    }
+    res.render('dashboard', { boards, user: req.usuario });
+  } catch (err) {
+    console.error('Error al cargar dashboard en DB:', err);
+    res.status(500).send('Error interno cargando sus datos');
   }
-
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-  res.redirect('/dashboard');
 });
 
-// ── Ruta POST: editar tarjeta ──────────────────────
-app.post('/editar-tarjeta', (req, res) => {
-  const { cardId, boardId, listId, titulo, descripcion, prioridad, tag,
-          fecha_inicio, fecha_fin, autor, responsable } = req.body;
-
-  const contenido = fs.readFileSync(DATA_PATH, 'utf-8');
-  const data = JSON.parse(contenido);
-
-  const board = data.boards.find(b => b.id === parseInt(boardId));
-  if (board) {
-    const list = board.lists.find(l => l.id === parseInt(listId));
-    if (list) {
-      const card = list.cards.find(c => c.id === parseInt(cardId));
-      if (card) {
-        card.titulo       = (titulo      || '').trim();
-        card.descripcion  = (descripcion || '').trim();
-        card.prioridad    = prioridad    || card.prioridad;
-        card.tag          = tag          || card.tag;
-        card.fecha_inicio = fecha_inicio || card.fecha_inicio;
-        card.fecha_fin    = fecha_fin    || card.fecha_fin;
-        card.autor        = (autor       || '').trim() || card.autor;
-        card.responsable  = (responsable || '').trim() || card.responsable;
-      }
-    }
-  }
-
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-  res.redirect('/dashboard');
-});
-
-// ── Ruta POST: mover tarjeta (fetch API, sin recarga) ──
-app.post('/mover-tarjeta', (req, res) => {
-  const { cardId, fromBoardId, fromListId, toBoardId, toListId } = req.body;
-
-  const contenido = fs.readFileSync(DATA_PATH, 'utf-8');
-  const data = JSON.parse(contenido);
-
-  const fromBoard = data.boards.find(b => b.id === parseInt(fromBoardId));
-  const toBoard   = data.boards.find(b => b.id === parseInt(toBoardId));
-
-  if (!fromBoard || !toBoard) return res.status(400).json({ ok: false, error: 'Board no encontrado' });
-
-  const fromList = fromBoard.lists.find(l => l.id === parseInt(fromListId));
-  const toList   = toBoard.lists.find(l => l.id === parseInt(toListId));
-
-  if (!fromList || !toList) return res.status(400).json({ ok: false, error: 'Lista no encontrada' });
-
-  const cardIndex = fromList.cards.findIndex(c => c.id === parseInt(cardId));
-  if (cardIndex === -1) return res.status(400).json({ ok: false, error: 'Tarjeta no encontrada' });
-
-  const [card] = fromList.cards.splice(cardIndex, 1);
-  card.estado = toList.estado || card.estado;
-  toList.cards.push(card);
-
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-  res.json({ ok: true });
-});
-
-// ── Ruta POST: eliminar tarjeta ────────────────────
-app.post('/eliminar-tarjeta', (req, res) => {
-  const { cardId, boardId, listId } = req.body;
-
-  const contenido = fs.readFileSync(DATA_PATH, 'utf-8');
-  const data = JSON.parse(contenido);
-
-  const board = data.boards.find(b => b.id === parseInt(boardId));
-  if (board) {
-    const list = board.lists.find(l => l.id === parseInt(listId));
-    if (list) {
-      const cardIndex = list.cards.findIndex(c => c.id === parseInt(cardId));
-      if (cardIndex !== -1) list.cards.splice(cardIndex, 1);
-    }
-  }
-
-  fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2));
-  res.redirect('/dashboard');
-});
-
-app.listen(port, () => {
-  console.log(`KanbanPro escuchando en http://localhost:${port}`);
+// Sincronizar Sequelize e Iniciar app
+sequelize.sync({ alter: true }).then(() => {
+  console.log('Base de Datos PostgreSQL Sincronizada y Alterada.');
+  app.listen(port, () => {
+    console.log(`KanbanPro escuchando en http://localhost:${port}`);
+  });
+}).catch(err => {
+  console.error("Error sincronizando BD:", err);
 });

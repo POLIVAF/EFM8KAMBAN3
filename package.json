@@ -1,7 +1,7 @@
 {
-  "name": "EFM7KAMBAN2",
+  "name": "EFM8KAMBAN3",
   "version": "1.0.0",
-  "description": "KanbanPro - Spring2",
+  "description": "KanbanPro - Spring3",
   "type": "module",
   "main": "app.js",
   "scripts": {
@@ -15,10 +15,13 @@
   "author": "Pablo Olivares",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.3.1",
     "express": "^4.22.1",
     "express-handlebars": "^8.0.6",
     "gsap": "^3.14.2",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.8"

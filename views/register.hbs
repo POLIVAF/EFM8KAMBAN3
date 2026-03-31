@@ -3,7 +3,7 @@
         <h2 class="text-2xl font-black uppercase tracking-tight mb-2 border-b-4 border-black pb-2">Crear cuenta</h2>
         <p class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-6">Acceso gratuito y permanente</p>
 
-        <form action="/register" method="POST">
+        <form action="/api/auth/register" method="POST" data-ajax-form>
             <div class="mb-4">
                 <label for="nombre" class="block font-bold uppercase text-xs tracking-widest mb-1">Nombre completo</label>
                 <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required

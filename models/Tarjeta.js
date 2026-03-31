@@ -14,6 +14,12 @@ const Tarjeta = sequelize.define('Tarjetas', {
   descripcion: {
     type: DataTypes.TEXT
   },
+  prioridad: { type: DataTypes.STRING },
+  tag: { type: DataTypes.STRING },
+  fecha_inicio: { type: DataTypes.STRING },
+  fecha_fin: { type: DataTypes.STRING },
+  autor: { type: DataTypes.STRING },
+  responsable: { type: DataTypes.STRING },
   estado: {
     type: DataTypes.STRING
   }

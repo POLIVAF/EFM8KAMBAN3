@@ -21,15 +21,65 @@ function updateCount(listEl) {
 }
 
 function persistMove(cardId, fromBoardId, fromListId, toBoardId, toListId) {
-  fetch('/mover-tarjeta', {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cardId, fromBoardId, fromListId, toBoardId, toListId })
+  fetch(`/api/listas/${toListId}/tarjetas/${cardId}/move`, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' }
   })
     .then(r => r.json())
-    .then(data => { if (!data.ok) location.reload(); })
+    .then(data => { if (data.ok === false) location.reload(); })
     .catch(() => location.reload());
 }
+
+// ── Interceptor AJAX Global para Formularios ──────────────
+document.addEventListener('submit', async (e) => {
+  const form = e.target.closest('form[data-ajax-form]');
+  if (!form) return;
+  e.preventDefault();
+
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+
+  try {
+    const response = await fetch(form.action, {
+      method: form.getAttribute('method') || 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+
+    if (response.ok && result.ok !== false) {
+      if (form.action.includes('/auth/login')) {
+        window.location.href = '/dashboard';
+      } else if (form.action.includes('/auth/register')) {
+        window.location.href = '/login';
+      } else {
+        // Soft reload del panel Kanban
+        const htmlResp = await fetch('/dashboard');
+        const htmlText = await htmlResp.text();
+        const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+        
+        const boardContainer = document.querySelector('.kanban-board');
+        if (boardContainer) {
+          const newBoard = doc.querySelector('.kanban-board');
+          if (newBoard) boardContainer.innerHTML = newBoard.innerHTML;
+          
+          if (typeof initGSAPDrag !== 'undefined') initGSAPDrag();
+          document.querySelectorAll('[popover]').forEach(p => {
+            if (p.hidePopover) p.hidePopover();
+          });
+        } else {
+          window.location.reload();
+        }
+      }
+    } else {
+      alert("Error: " + (result.error || 'Operación fallida'));
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error de comunicación de red al procesar el formulario.");
+  }
+});
 
 // ── GSAP Draggable ───────────────────────────────────
 function initGSAPDrag() {

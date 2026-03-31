@@ -69,11 +69,7 @@
                         <div id="edit-{{this.id}}" popover>
                             <h4 class="text-lg font-black uppercase tracking-tight mb-1 border-b-4 border-black pb-2">Editar Tarjeta</h4>
 
-                            <form method="POST" action="/editar-tarjeta">
-                                <input type="hidden" name="cardId"  value="{{this.id}}">
-                                <input type="hidden" name="boardId" value="{{../../id}}">
-                                <input type="hidden" name="listId"  value="{{../id}}">
-
+                            <form method="PUT" action="/api/listas/{{../id}}/tarjetas/{{this.id}}" data-ajax-form>
                                 <div class="grid grid-cols-2 gap-3 mb-4">
                                     <div class="col-span-2">
                                         <label class="form-label">Título</label>
@@ -127,11 +123,8 @@
                                 </div>
                             </form>
 
-                            <form method="POST" action="/eliminar-tarjeta"
+                            <form method="DELETE" action="/api/listas/{{../id}}/tarjetas/{{this.id}}" data-ajax-form
                                   onsubmit="return confirm('¿Eliminar esta tarjeta? Esta acción no se puede deshacer.')">
-                                <input type="hidden" name="cardId"  value="{{this.id}}">
-                                <input type="hidden" name="boardId" value="{{../../id}}">
-                                <input type="hidden" name="listId"  value="{{../id}}">
                                 <button type="submit" class="btn-danger w-full">Eliminar Tarjeta</button>
                             </form>
                         </div>
@@ -152,10 +145,7 @@
                     <h4 class="text-lg font-black uppercase tracking-tight mb-1 border-b-4 border-black pb-2">Nueva Tarjeta</h4>
                     <p class="text-xs font-bold uppercase tracking-widest text-gray-500 mb-4">Lista: {{this.name}}</p>
 
-                    <form method="POST" action="/nueva-tarjeta">
-                        <input type="hidden" name="boardId" value="{{../id}}">
-                        <input type="hidden" name="listId"  value="{{this.id}}">
-
+                    <form method="POST" action="/api/listas/{{this.id}}/tarjetas" data-ajax-form>
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <div class="col-span-2">
                                 <label class="form-label">Título</label>
