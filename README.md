@@ -1,102 +1,123 @@
-# Proyecto: "KanbanPro" - Kick-off del Sprint 3 (Fase Final)
+![Preview App](./public/img/preview.png)
 
-**Asunto:** 📧 ¡Fase 3 iniciada! Es hora de darle vida a KanbanPro con la API
+KanbanPro 🗂️
 
-**De:** David, Product Manager de KanbanPro  
-**Para:** El Equipo de Desarrollo (Tú)
+Proyecto Full Stack JavaScript: API RESTful + Frontend Handlebars + PostgreSQL
 
-¡Hola equipo!
+KanbanPro es una aplicación de gestión de proyectos tipo Kanban que permite a los usuarios crear tableros, listas y tarjetas, con autenticación segura y datos reales desde la base de datos.
 
-El trabajo realizado en la arquitectura de la base de datos durante el Sprint 2 ha sido impecable. Tenemos un modelo de datos sólido y bien probado, listo para ser el cerebro de nuestra aplicación.
+📌 Problema que Resuelve
 
-Llegamos a la fase final y más visible: la construcción de la **API RESTful** y la conexión de todas las piezas. En este sprint, transformaremos KanbanPro de un conjunto de componentes desacoplados a un **Producto Mínimo Viable (MVP)** completamente funcional. Implementaremos la seguridad para que nuestros usuarios puedan registrarse e iniciar sesión, construiremos los endpoints para que la aplicación sea interactiva y, finalmente, conectaremos nuestra interfaz visual para que muestre datos reales.
+Antes, los usuarios tenían que usar métodos manuales o herramientas desconectadas para organizar sus tareas y proyectos.
+KanbanPro centraliza todo en un tablero interactivo, permitiendo:
 
-Este es el sprint donde todo cobra sentido. Al finalizar, tendremos una aplicación funcional de la que estar orgullosos.
+Gestión visual de tareas y proyectos.
+Control de progreso mediante listas y tarjetas.
+Acceso seguro y personalizado para cada usuario.
 
-¡Vamos a por el lanzamiento!
+⚙️ Funcionalidades
 
-Saludos, David
+Autenticación y Seguridad
+Registro de usuarios con contraseña hasheada (bcryptjs).
+Inicio de sesión con JSON Web Tokens (JWT).
+Middleware que protege las rutas y asegura que solo usuarios autenticados accedan a sus datos.
 
----
+Gestión de Proyectos
 
-## Resumen del Sprint 3: API RESTful, Seguridad y Funcionalidad Completa
+CRUD completo de tableros, listas y tarjetas.
+Conexión de datos reales usando Sequelize + PostgreSQL.
+Dashboard dinámico que refleja los cambios en tiempo real.
+Frontend Interactivo
+Renderizado de vistas con Handlebars.
+Interfaz amigable y responsive usando Bootstrap 5.
+Animaciones y efectos con GSAP (opcional).
+Despliegue en Producción
+Configurado para Vercel, con trust proxy y cookies seguras (httpOnly, sameSite).
+Logs para verificar NODE_ENV.
+CORS configurado para desarrollo y producción.
 
-**Objetivo del Sprint:** Desarrollar la API RESTful completa para gestionar todos los recursos de la aplicación, implementar un sistema de autenticación seguro con JWT y, finalmente, conectar las vistas de Handlebars a la base de datos a través de esta nueva capa de API para lograr una aplicación totalmente funcional.
+🛠️ Requisitos Técnicos
 
----
+Backend: Node.js, Express, Sequelize, PostgreSQL
+Frontend: Handlebars, Bootstrap 5, GSAP (opcional)
+Seguridad: JWT, bcryptjs, cookies seguras
+Despliegue: Vercel o similar, con soporte para Node.js y PostgreSQL
 
-### Historias de Usuario y Técnicas a Implementar
+💻 Instalación Local
 
-#### **HU-04: Gestión de Cuentas de Usuario**
+Clonar el repositorio:
+git clone https://github.com/tu-usuario/KanbanPro.git
+cd KanbanPro
+Instalar dependencias:
+npm install
 
-* **Como** un nuevo usuario,
-* **Quiero** poder registrarme en la aplicación con un email y contraseña,
-* **Para** crear una cuenta personal y segura.
+Configurar variables de entorno (.env):
+DB_HOST=localhost
+DB_USER=tu_usuario
+DB_PASS=tu_contraseña
+DB_NAME=kanbanpro
+JWT_SECRET=supersecreto
+SERVER_PORT=3000
+NODE_ENV=development
 
-* **Como** un usuario ya registrado,
-* **Quiero** poder iniciar sesión con mis credenciales,
-* **Para** acceder a mis tableros de proyectos.
+Ejecutar la app en local:
+npm run dev
+La app correrá en http://localhost:3000.
+Sequelize sincroniza la base de datos solo en desarrollo.
+🚀 Despliegue en Vercel
+Quitamos app.listen() en producción.
+Quitamos sequelize.sync() en producción (solo authenticate).
+Configuramos trust proxy y CORS correctamente.
+Incluimos las carpetas views/ y public/ en vercel.json.
+Usamos cookies seguras:
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none"
+});
+🔧 Momentos Técnicos Destacados
+Autenticación JWT
+Middleware verifica token en Authorization: Bearer [token] para proteger todas las rutas sensibles.
+Sequelize con PostgreSQL
+sequelize.authenticate() para conectar a DB.
+sequelize.sync({ alter: true }) solo en desarrollo para no afectar producción.
+Relación Tablero → Listas → Tarjetas totalmente funcional.
+Vistas dinámicas con Handlebars
+GET /dashboard obtiene datos reales de DB y los pasa a la plantilla.
+Renderiza tableros, listas y tarjetas con lógica de controladores.
 
-**Criterios de Aceptación:**
-- ✅ Se deben instalar las dependencias `jsonwebtoken` y `bcryptjs`.
-- ✅ Debe existir un endpoint `POST /api/auth/register` que cree un nuevo usuario y guarde su contraseña de forma segura (hasheada con `bcryptjs`).
-- ✅ Debe existir un endpoint `POST /api/auth/login` que verifique las credenciales del usuario y, si son correctas, genere y devuelva un JSON Web Token (JWT).
+📝 Buenas Prácticas Nivel Empresa
 
----
+Logs de entorno:
+console.log("NODE_ENV:", process.env.NODE_ENV);
+Separación de entornos (dev vs production).
+Configuración de CORS para frontend local y producción.
+Middleware de seguridad y cookies httpOnly + secure.
 
-#### **HT-05: Seguridad de la API**
+📂 Estructura del Proyecto
+KanbanPro/
+├─ app.js
+├─ config/
+│  └─ sequelize.js
+├─ models/
+├─ routes/
+├─ middlewares/
+├─ views/
+│  ├─ layouts/
+│  └─ partials/
+├─ public/
+│  └─ assets/
+├─ vercel.json
+└─ package.json
 
-* **Como** desarrollador,
-* **Necesito** proteger los endpoints de la aplicación,
-* **Para** asegurar que solo los usuarios autenticados puedan acceder y modificar sus propios datos.
+📌 Aprendizajes y Retos
 
-**Criterios de Aceptación:**
-- ✅ Se debe crear un **middleware** de autenticación que intercepte las peticiones.
-- ✅ El middleware debe verificar la existencia y validez de un JWT en el header `Authorization: Bearer [token]`.
-- ✅ Si el token es inválido o no existe, la API debe devolver un error `401` o `403`.
-- ✅ Todas las rutas de gestión de datos (tableros, listas, tarjetas) deben estar protegidas por este middleware.
+Integración completa de backend, frontend y base de datos.
+Implementación de seguridad profesional con JWT y cookies seguras.
+Adaptación de la app para despliegue en Vercel sin perder funcionalidad local.
+Comprensión profunda de Sequelize y relaciones entre modelos.
 
----
+⚡ Autor
 
-#### **HT-06: API RESTful para la Gestión de Proyectos**
-
-* **Como** desarrollador de frontend (simulado),
-* **Necesito** un conjunto de endpoints RESTful para gestionar los recursos de la aplicación,
-* **Para** poder construir una interfaz de usuario interactiva y desacoplada.
-
-**Criterios de Aceptación:**
-- ✅ Se debe crear un router de Express para agrupar todas las rutas de la API (ej: `/api`).
-- ✅ Se deben implementar todos los endpoints CRUD para los recursos principales:
-  - **Tableros:** `GET`, `POST`, `PUT`, `DELETE` en `/api/tableros`.
-  - **Listas:** `POST`, `PUT`, `DELETE` en `/api/tableros/:tableroId/listas`.
-  - **Tarjetas:** `POST`, `PUT`, `DELETE` en `/api/listas/:listaId/tarjetas`.
-- ✅ Todos estos endpoints deben usar los métodos de Sequelize para interactuar con la base de datos.
-- ✅ La API debe ser probada exhaustivamente con un cliente como **Postman** o **Insomnia**.
-
----
-
-#### **HU-07: Conexión de la Interfaz con Datos Reales**
-
-* **Como** usuario con sesión iniciada,
-* **Quiero** que el dashboard me muestre mis tableros, listas y tarjetas reales guardados en la base de datos,
-* **Para** poder gestionar mi trabajo de forma efectiva.
-
-**Criterios de Aceptación:**
-- ✅ Las rutas de las vistas (ej: `GET /dashboard`) deben ser **modificadas**.
-- ✅ Dentro de estas rutas, se debe llamar a la nueva lógica de los controladores de la API para obtener los datos desde la base de datos usando Sequelize.
-- ✅ Los datos **reales** (ya no los simulados) deben ser pasados a las plantillas de Handlebars para su renderizado.
-
----
-
-### Requisitos Técnicos
-
-* **Arquitectura:** API RESTful.
-* **Seguridad:** Autenticación basada en JWT, hasheo de contraseñas con `bcryptjs`.
-* **Herramientas:** Se requiere el uso de Postman, Insomnia o una herramienta similar para las pruebas de la API.
-
----
-
-### Entregable
-
-* Un **repositorio público en GitHub** con el proyecto KanbanPro completamente funcional.
-* La aplicación debe renderizar datos reales desde la base de datos y tener una API RESTful documentada (en un `README.md`) y protegida.
+Pablo Olivares F. – Full Stack JavaScript Senior
+GitHub
