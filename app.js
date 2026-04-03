@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from "cors";
 import { engine } from 'express-handlebars';
 import cookieParser from 'cookie-parser';
 import apiRoutes from './routes/api.routes.js';
@@ -7,6 +8,9 @@ import { Tablero, Lista, Tarjeta, Usuario } from './models/index.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sequelize from './config/sequelize.js';
+import dotenv from 'dotenv';
+dotenv.config();
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,10 +18,25 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = 3000;
 
-// Middleware
-app.use(express.urlencoded({ extended: true }));
+// Configurar trust proxy para cookies seguras en producción (Vercel)
+app.set('trust proxy', 1);
+
+// orden CORS primero para evitar problemas de preflight con cookies
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:4200",
+    "https://tu-app.vercel.app"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+// Middleware para parsear JSON y datos de formularios
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// Cookies
 app.use(cookieParser()); // Habilitar la lectura de cookies
+// Archivos estáticos (CSS, JS, imágenes)
 app.use(express.static('public'));
 
 // Enrutador Principal de la APIREST
@@ -91,12 +110,31 @@ app.get('/dashboard', verificarToken, async (req, res) => {
   }
 });
 
-// Sincronizar Sequelize e Iniciar app
-sequelize.sync({ alter: true }).then(() => {
-  console.log('Base de Datos PostgreSQL Sincronizada y Alterada.');
-  app.listen(port, () => {
-    console.log(`KanbanPro escuchando en http://localhost:${port}`);
-  });
-}).catch(err => {
-  console.error("Error sincronizando BD:", err);
-});
+  const iniciar = async () => {
+  try {
+    console.log("NODE_ENV:", process.env.NODE_ENV); // Debug: Verificar entorno
+
+    await sequelize.authenticate();
+    console.log('Base de datos conectada');
+
+    if (process.env.NODE_ENV !== 'production') {
+      await sequelize.sync({ alter: true }); // solo en local
+      console.log('Base de datos sincronizada');
+    }
+
+  } catch (e) {
+    console.error('Error de conexión a la base de datos:', e);
+  }
+};
+
+// 🚀 SOLO LOCAL
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.SERVER_PORT || 3000;
+  app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
+}
+
+// iniciar conexión
+iniciar();
+
+// export para Vercel
+export default app;
