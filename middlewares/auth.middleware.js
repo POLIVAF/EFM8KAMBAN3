@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-const SECRET = 'super_secreto'; // En producción, usar variables de entorno
+const SECRET = process.env.JWT_SECRET; // En producción, usar variables de entorno
 
 export const verificarToken = (req, res, next) => {
   // Buscar el token primariamente en las cookies, o en el header Authorization (para pruebas en Postman)

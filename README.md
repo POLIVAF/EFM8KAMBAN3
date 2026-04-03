@@ -46,7 +46,7 @@ Despliegue: Vercel o similar, con soporte para Node.js y PostgreSQL
 💻 Instalación Local
 
 Clonar el repositorio:
-git clone https://github.com/tu-usuario/KanbanPro.git
+git clone https://github.com/POLIVAF/KanbanPro.git
 cd KanbanPro
 Instalar dependencias:
 npm install

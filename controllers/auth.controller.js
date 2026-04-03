@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Usuario, Tablero, Lista, Tarjeta } from '../models/index.js';
 
-const SECRET = 'super_secreto';
+const SECRET = process.env.JWT_SECRET;
 
 export const register = async (req, res) => {
   const { nombre, email, password } = req.body;
@@ -115,4 +115,4 @@ export const login = async (req, res) => {
 export const logout = (req, res) => {
   res.clearCookie('token');
   res.json({ ok: true, message: 'Sesión cerrada correctamente' });
-};
+};

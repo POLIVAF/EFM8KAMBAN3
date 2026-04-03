@@ -22,12 +22,12 @@ const port = 3000;
 app.set('trust proxy', 1);
 
 // orden CORS primero para evitar problemas de preflight con cookies
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',')
+  : ["http://localhost:5173", "http://localhost:4200"];
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:4200",
-    "https://tu-app.vercel.app"
-  ],
+  origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
