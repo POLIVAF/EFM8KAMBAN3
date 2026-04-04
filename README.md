@@ -1,6 +1,6 @@
 ![Preview App](./public/img/preview.png)
 
-KanbanPro 🗂️
+#  KANBANPRO
 
 Proyecto Full Stack JavaScript: API RESTful + Frontend Handlebars + PostgreSQL
 
@@ -94,21 +94,42 @@ Separación de entornos (dev vs production).
 Configuración de CORS para frontend local y producción.
 Middleware de seguridad y cookies httpOnly + secure.
 
-📂 Estructura del Proyecto
-KanbanPro/
-├─ app.js
-├─ config/
-│  └─ sequelize.js
-├─ models/
-├─ routes/
-├─ middlewares/
-├─ views/
-│  ├─ layouts/
-│  └─ partials/
-├─ public/
-│  └─ assets/
-├─ vercel.json
-└─ package.json
+Estructura del proyecto
+
+
+kanbanpro/
+├── app.js                  # Entrada principal, configuración Express
+├── vercel.json             # Configuración para Vercel
+├── config/
+│   └── sequelize.js        # Conexión a PostgreSQL
+├── models/
+│   ├── Usuario.js
+│   ├── Tablero.js
+│   ├── Lista.js
+│   ├── Tarjeta.js
+│   └── index.js            # Relaciones entre modelos
+├── routes/
+│   ├── api.routes.js
+│   ├── auth.route.js
+│   ├── tablero.routes.js
+│   ├── lista.routes.js
+│   └── tarjeta.routes.js
+├── controllers/
+│   ├── auth.controller.js
+│   ├── tablero.controller.js
+│   ├── lista.controller.js
+│   └── tarjeta.controller.js
+├── middlewares/
+│   └── auth.middleware.js  # Verificación JWT
+├── views/
+│   ├── layouts/main.hbs
+│   ├── home.hbs
+│   ├── login.hbs
+│   ├── register.hbs
+│   └── dashboard.hbs
+└── public/
+    ├── kanban.js           # Lógica frontend (drag & drop, modales)
+    └── style.css           # Tailwind compilado
 
 📌 Aprendizajes y Retos
 
@@ -119,5 +140,5 @@ Comprensión profunda de Sequelize y relaciones entre modelos.
 
 ⚡ Autor
 
-Pablo Olivares F. – Full Stack JavaScript Senior
+Pablo Olivares F. – Full-Stack JavaScript 
 GitHub
