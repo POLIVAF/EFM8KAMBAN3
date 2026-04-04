@@ -94,9 +94,9 @@ Separación de entornos (dev vs production).
 Configuración de CORS para frontend local y producción.
 Middleware de seguridad y cookies httpOnly + secure.
 
-Estructura del proyecto
+## 📁 ESTRUCTURA DEL PROYECTO (KANBANPRO)
 
-
+```md
 kanbanpro/
 ├── app.js                  # Entrada principal, configuración Express
 ├── vercel.json             # Configuración para Vercel
@@ -130,6 +130,8 @@ kanbanpro/
 └── public/
     ├── kanban.js           # Lógica frontend (drag & drop, modales)
     └── style.css           # Tailwind compilado
+
+```
 
 📌 Aprendizajes y Retos
 
